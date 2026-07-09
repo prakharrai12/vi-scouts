@@ -1,0 +1,9 @@
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+extraPaths = ["backend", ".venv/Lib/site-packages", "backend/venv/Lib/site-packages"]
+
+[tool.pyrefly]
+venvPath = "."
+venv = ".venv"
+extraPaths = ["backend", ".venv/Lib/site-packages", "backend/venv/Lib/site-packages"]
