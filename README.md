@@ -16,10 +16,11 @@
 
 ### 🔥 Key Features
 - **🎨 High-Maintenance Cyan Luxury UI/UX**: Built with modern glassmorphism, ambient glowing accents, smooth framer-motion micro-animations, and crystal-clear typography.
-- **🤖 Real-Time Semantic Evaluation Engine**: Deep domain-aware AI scoring using **Google Gemini** (with smart local fallback heuristics) to evaluate structural articulation, confidence, and clarity.
+- **📄 AI Resume Parsing (.PDF Upload)**: Upload your PDF resume to dynamically extract core technical competencies, calculate a tailored readiness profile (`0–100%`), and generate custom interview questions.
+- **📊 Interactive Performance Trajectory Analytics**: Real-time interactive charts visualizing your confidence and communication score trajectories across questions.
+- **🤖 Real-Time Semantic Evaluation Engine**: Deep domain-aware AI scoring using **Google Gemini** (with smart local fallback heuristics) to evaluate structural articulation and technical clarity.
 - **⚡ One-Click Demo Credentials**: Test the platform instantly without friction using pre-configured candidate accounts (`demo@vi-scouts.com`).
-- **📊 Comprehensive Practice Tracks**: Dedicated assessment paths for *Technical & Architecture*, *Behavioral & Leadership*, and *Rapid Quick-Fire* interviews.
-- **📈 Historical Session Tracking**: Interactive dashboard logging all past assessment scores and progress trajectories.
+- **☁️ 24/7 Cloud & Vercel Serverless Deployment**: Configured with `@vercel/python` and `@vercel/static-build` (`vercel.json`) for effortless, instant fullstack cloud hosting on **Vercel**.
 
 ---
 

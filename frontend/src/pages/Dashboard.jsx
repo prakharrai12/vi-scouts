@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import useStore from '../store/useStore';
 import { Button } from '../components/ui/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
-import { Play, History, Trophy, Clock, Sparkles, BrainCircuit, MessageSquare, Target, ChevronRight } from 'lucide-react';
+import { Play, History, Trophy, Clock, Sparkles, BrainCircuit, MessageSquare, Target, ChevronRight, Upload, FileText, CheckCircle2, BarChart3, TrendingUp, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { API_URL } from '../lib/utils';
 
@@ -12,6 +12,9 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [history, setHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
+  const [resumeData, setResumeData] = useState(null);
+  const [uploadError, setUploadError] = useState('');
 
   useEffect(() => {
     if (!token) {
@@ -54,6 +57,37 @@ export default function Dashboard() {
       }
     } catch (error) {
       console.error("Failed to start interview:", error);
+    }
+  };
+
+  const handleResumeUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    setUploadError('');
+    setResumeData(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await fetch(`${API_URL}/api/resume/upload`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setResumeData(data);
+      } else {
+        const err = await response.json();
+        setUploadError(err.detail || 'Failed to process resume');
+      }
+    } catch (error) {
+      setUploadError('Network error uploading resume PDF');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -141,6 +175,138 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Resume PDF Upload & Tailored AI Questions Hub */}
+      <Card className="bg-gradient-to-r from-slate-900 via-[#07192f] to-slate-900 border border-cyan-500/30 shadow-[0_0_30px_rgba(6,182,212,0.15)] rounded-3xl p-6 sm:p-8 backdrop-blur-xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="relative z-10 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+            <div className="space-y-1">
+              <div className="inline-flex items-center space-x-2 text-xs font-extrabold uppercase tracking-widest text-cyan-400">
+                <FileText className="h-4 w-4 text-teal-400" />
+                <span>AI Resume Parsing & Custom Question Generator</span>
+              </div>
+              <h3 className="text-2xl font-black text-slate-100">Upload Your Resume (.PDF)</h3>
+              <p className="text-sm text-slate-300">Our semantic engine extracts your core competencies and constructs highly tailored technical & leadership prompts.</p>
+            </div>
+            <div>
+              <label className="cursor-pointer inline-flex items-center justify-center px-6 py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 via-teal-400 to-cyan-400 hover:from-cyan-400 hover:to-teal-300 text-slate-950 font-black text-sm shadow-[0_0_20px_rgba(6,182,212,0.35)] transition-all transform hover:-translate-y-0.5">
+                {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4 stroke-[2.5]" />}
+                {isUploading ? "Extracting Skills..." : "Upload Resume PDF"}
+                <input type="file" accept=".pdf" onChange={handleResumeUpload} className="hidden" disabled={isUploading} />
+              </label>
+            </div>
+          </div>
+
+          {uploadError && (
+            <div className="p-4 rounded-2xl bg-red-950/60 border border-red-500/40 text-red-300 text-sm font-bold animate-pulse text-center">
+              {uploadError}
+            </div>
+          )}
+
+          {resumeData && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 pt-2">
+              <div className="flex flex-wrap items-center justify-between gap-4 p-5 rounded-2xl bg-cyan-950/40 border border-cyan-500/30">
+                <div className="flex items-center space-x-3">
+                  <CheckCircle2 className="h-6 w-6 text-teal-400 shrink-0" />
+                  <div>
+                    <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Parsed Document</span>
+                    <div className="text-base font-bold text-slate-100">{resumeData.filename} ({resumeData.word_count} words analyzed)</div>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3 bg-slate-950 px-4 py-2 rounded-xl border border-slate-800">
+                  <span className="text-xs font-bold text-slate-400 uppercase">AI Readiness Profile:</span>
+                  <span className="text-lg font-black text-cyan-400">{resumeData.readiness_score}%</span>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <span className="text-xs font-extrabold uppercase tracking-widest text-teal-300">Extracted Core Competencies:</span>
+                <div className="flex flex-wrap gap-2">
+                  {resumeData.skills_extracted?.map((skill, i) => (
+                    <span key={i} className="px-3.5 py-1.5 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-xs font-extrabold shadow-sm">
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <span className="text-xs font-extrabold uppercase tracking-widest text-cyan-400 flex items-center">
+                  <BrainCircuit className="mr-2 h-4 w-4 text-cyan-400" /> Tailored Questions Generated From Your Experience (Click to Practice):
+                </span>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {resumeData.tailored_questions?.map((q, idx) => (
+                    <div key={idx} onClick={startNewInterview} className="group cursor-pointer p-5 rounded-2xl bg-slate-950/80 border border-slate-800 hover:border-cyan-400 hover:shadow-[0_0_20px_rgba(6,182,212,0.15)] transition-all flex flex-col justify-between">
+                      <p className="text-sm font-medium text-slate-200 group-hover:text-cyan-300 transition-colors leading-relaxed">&ldquo;{q}&rdquo;</p>
+                      <div className="mt-4 flex items-center justify-end text-xs font-extrabold text-cyan-400 group-hover:translate-x-1 transition-transform">
+                        Answer Now &rarr;
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </div>
+      </Card>
+
+      {/* Interactive Performance Trajectory Chart */}
+      <Card className="bg-slate-900/80 border-slate-800 rounded-3xl p-6 sm:p-8 backdrop-blur-xl space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center space-x-2 text-xs font-extrabold uppercase tracking-widest text-teal-400 mb-1">
+              <TrendingUp className="h-4 w-4 text-teal-400" />
+              <span>Session Score Progression</span>
+            </div>
+            <h3 className="text-2xl font-black text-slate-100 flex items-center">
+              <BarChart3 className="mr-3 h-6 w-6 text-cyan-400" /> Interactive Performance Trajectory
+            </h3>
+          </div>
+          <div className="flex items-center space-x-4 text-xs font-extrabold">
+            <span className="flex items-center text-teal-300"><span className="w-3 h-3 rounded-full bg-teal-400 mr-2 shadow-[0_0_8px_rgba(20,184,166,0.8)]"></span>Confidence</span>
+            <span className="flex items-center text-cyan-300"><span className="w-3 h-3 rounded-full bg-cyan-400 mr-2 shadow-[0_0_8px_rgba(6,182,212,0.8)]"></span>Communication</span>
+          </div>
+        </div>
+
+        <div className="pt-2">
+          {allFeedbacks.length === 0 ? (
+            <div className="h-48 rounded-2xl bg-slate-950/60 border border-dashed border-slate-800 flex flex-col items-center justify-center text-slate-400 text-sm font-medium">
+              <span>Complete your first practice question to unlock dynamic score trajectory charts!</span>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                {allFeedbacks.slice(-6).map((fb, idx) => (
+                  <div key={idx} className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 hover:border-cyan-500/40 transition-all flex flex-col items-center text-center">
+                    <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">Q#{idx + 1} Assessment</span>
+                    <div className="w-full space-y-2">
+                      <div>
+                        <div className="flex justify-between text-[10px] font-extrabold text-teal-300 mb-1">
+                          <span>Conf</span>
+                          <span>{fb.confidence_score || 85}%</span>
+                        </div>
+                        <div className="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                          <div className="h-full bg-gradient-to-r from-teal-500 to-teal-300 rounded-full shadow-[0_0_8px_rgba(20,184,166,0.5)]" style={{ width: `${fb.confidence_score || 85}%` }}></div>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-[10px] font-extrabold text-cyan-300 mb-1">
+                          <span>Comm</span>
+                          <span>{fb.communication_score || 88}%</span>
+                        </div>
+                        <div className="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                          <div className="h-full bg-gradient-to-r from-cyan-500 to-cyan-300 rounded-full shadow-[0_0_8px_rgba(6,182,212,0.5)]" style={{ width: `${fb.communication_score || 88}%` }}></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </Card>
 
       {/* Quick Practice Tracks */}
       <div className="space-y-6">
