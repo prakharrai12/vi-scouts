@@ -73,6 +73,12 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     return user
 
 
+@app.get("/")
+@app.get("/api")
+@app.get("/api/server.py")
+def api_root():
+    return {"status": "ok", "service": "VI-SCOUTS AI Interview Platform API", "version": "1.0.0"}
+
 @app.get("/api/health")
 def health_check():
     return {"status": "ok", "message": "AI Interview Simulator backend is running"}
