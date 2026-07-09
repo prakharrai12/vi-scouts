@@ -1,3 +1,27 @@
+[project]
+name = "vi-scouts-platform"
+version = "1.0.0"
+description = "VI-SCOUTS AI Interview Platform API"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "fastapi==0.136.1",
+    "uvicorn==0.47.0",
+    "SQLAlchemy==2.0.51",
+    "pydantic==2.13.4",
+    "email-validator==2.3.0",
+    "python-dotenv==1.0.0",
+    "python-multipart==0.0.32",
+    "passlib==1.7.4",
+    "bcrypt==3.2.2",
+    "python-jose[cryptography]==3.5.0",
+    "requests==2.34.2",
+    "PyPDF2==3.0.1"
+]
+
+[tool.uv]
+package = false
+
 [tool.pyright]
 venvPath = "."
 venv = ".venv"
