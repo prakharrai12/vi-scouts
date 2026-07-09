@@ -1,7 +1,12 @@
 from sqlalchemy.orm import Session
-from database import SessionLocal, engine
-from models import Base, User
-from auth import get_password_hash
+try:
+    from database import SessionLocal, engine
+    from models import Base, User
+    from auth import get_password_hash
+except ImportError:
+    from backend.database import SessionLocal, engine
+    from backend.models import Base, User
+    from backend.auth import get_password_hash
 
 Base.metadata.create_all(bind=engine)
 
