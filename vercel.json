@@ -10,7 +10,7 @@
       "destination": "/api/index.py"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!api/|auth/|assets/|.*\\.(?:png|svg|ico|json|jpg|webp|css|js)$).*)",
       "destination": "/index.html"
     }
   ]
