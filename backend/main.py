@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 import os
 import io
 from typing import Optional, List
@@ -10,8 +11,12 @@ from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 import PyPDF2
 
-import models, schemas, auth
-from database import engine, get_db
+try:
+    import models, schemas, auth
+    from database import engine, get_db
+except ImportError:
+    from backend import models, schemas, auth
+    from backend.database import engine, get_db
 
 load_dotenv()
 
@@ -48,20 +53,26 @@ def call_openrouter(system_prompt: str, user_prompt: str) -> Optional[str]:
         print(f"OpenRouter exception: {e}")
         return None
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    try:
+        models.Base.metadata.create_all(bind=engine)
+        try:
+            import seed
+            seed.seed()
+        except ImportError:
+            from backend import seed
+            seed.seed()
+    except Exception as e:
+        print(f"Serverless startup DB initialization notice: {e}")
+    yield
+
 app = FastAPI(
     title="VI-SCOUTS AI Interview Platform API",
     description="Evaluate interview answers with AI precision and comprehensive feedback using OpenRouter tencent/hy3:free.",
     version="2.0.0",
+    lifespan=lifespan,
 )
-
-@app.on_event("startup")
-def startup_db_init():
-    try:
-        models.Base.metadata.create_all(bind=engine)
-        import seed
-        seed.seed()
-    except Exception as e:
-        print(f"Serverless startup DB initialization notice: {e}")
 
 app.add_middleware(
     CORSMiddleware,
@@ -80,10 +91,10 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, auth.SECRET_KEY, algorithms=[auth.ALGORITHM])
-        email: str = payload.get("email")
-        if email is None:
+        email_val = payload.get("email")
+        if email_val is None or not isinstance(email_val, str):
             raise credentials_exception
+        email: str = email_val
         token_data = schemas.TokenData(email=email)
     except JWTError:
         raise credentials_exception
@@ -134,7 +145,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 
 @app.post("/api/resume/upload")
 async def upload_resume(file: UploadFile = File(...), current_user: models.User = Depends(get_current_user)):
-    if not file.filename.endswith(".pdf"):
+    if not file.filename or not file.filename.endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are supported.")
     try:
         content = await file.read()
