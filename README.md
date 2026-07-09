@@ -1,7 +1,7 @@
 # 🧠 VI-SCOUTS | Next-Gen AI Candidate Assessment Platform
 
 <p align="center">
-  <img src="docs/preview.png" alt="VI-SCOUTS Platform Preview" width="800" style="border-radius: 12px; box-shadow: 0 10px 30px rgba(6, 182, 212, 0.3);" />
+  <img src="docs/preview.png" alt="VI-SCOUTS Platform Preview" width="900" style="border: 4px solid #000000; box-shadow: 8px 8px 0px 0px #000000;" />
 </p>
 
 <p align="center">
@@ -12,10 +12,10 @@
 
 ## ✨ Overview
 
-**VI-SCOUTS** is an enterprise-grade, dynamic AI interview practice suite designed with a **High-Maintenance Cyan & Deep Teal Luxury Glassmorphism** aesthetic. It enables candidates to test their skills across demanding technical trade-offs, STAR-method leadership questions, and rapid quick-fire scenarios while receiving instant clarity and confidence analytics.
+**VI-SCOUTS** is an enterprise-grade, dynamic AI interview practice suite designed with an **Austere. Authoritative. Precision Editorial Monochrome** aesthetic. It enables candidates to test their skills across demanding technical trade-offs, STAR-method leadership questions, and rapid quick-fire scenarios while receiving instant clarity and confidence analytics.
 
 ### 🔥 Key Features
-- **🎨 High-Maintenance Cyan Luxury UI/UX**: Built with modern glassmorphism, ambient glowing accents, smooth framer-motion micro-animations, and crystal-clear typography.
+- **🎨 Precision Monochrome Editorial UI/UX**: Built with sharp monochrome borders, high-contrast dark/light typography, ambient glowing accents, smooth framer-motion micro-animations, and crystal-clear presentation.
 - **📄 AI Resume Parsing (.PDF Upload)**: Upload your PDF resume to dynamically extract core technical competencies, calculate a tailored readiness profile (`0–100%`), and generate custom interview questions.
 - **📊 Interactive Performance Trajectory Analytics**: Real-time interactive charts visualizing your confidence and communication score trajectories across questions.
 - **🤖 Real-Time Semantic Evaluation Engine**: Deep domain-aware AI scoring using **Google Gemini** (with smart local fallback heuristics) to evaluate structural articulation and technical clarity.
