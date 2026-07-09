@@ -3,7 +3,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-if os.environ.get("VERCEL"):
+# Check all Vercel/Lambda serverless indicators or if current dir is read-only
+if os.environ.get("VERCEL") or os.environ.get("VERCEL_ENV") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME") or os.environ.get("LAMBDA_TASK_ROOT") or not os.access(".", os.W_OK):
     SQLALCHEMY_DATABASE_URL = "sqlite:////tmp/ai_interview.db"
 else:
     SQLALCHEMY_DATABASE_URL = "sqlite:///./ai_interview.db"

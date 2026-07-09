@@ -18,6 +18,13 @@ load_dotenv()
 
 models.Base.metadata.create_all(bind=engine)
 
+# Auto-seed initial demo candidate records on cold boot so Vercel serverless has ready accounts
+try:
+    import seed
+    seed.seed()
+except Exception as e:
+    print(f"Serverless auto-seed notice: {e}")
+
 API_KEY = os.environ.get("GOOGLE_API_KEY")
 MODEL_NAME = os.environ.get("AI_MODEL_NAME", "gemini-1.5-flash")
 
