@@ -58,6 +58,12 @@ async def lifespan(app: FastAPI):
     try:
         models.Base.metadata.create_all(bind=engine)
         try:
+            from database import ensure_schema
+            ensure_schema()
+        except ImportError:
+            from backend.database import ensure_schema
+            ensure_schema()
+        try:
             import seed
             seed.seed()
         except ImportError:
@@ -205,11 +211,56 @@ async def upload_resume(file: UploadFile = File(...), current_user: models.User 
         raise HTTPException(status_code=500, detail=f"Error processing resume PDF: {str(e)}")
 
 @app.post("/api/interviews", response_model=schemas.SessionResponse)
-def create_interview_session(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
-    session = models.InterviewSession(user_id=current_user.id)
+def create_interview_session(data: Optional[schemas.SessionCreate] = None, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    category = "General Technical & Architecture"
+    questions_list = []
+    if data:
+        if data.category:
+            category = data.category
+        if data.questions and len(data.questions) > 0:
+            questions_list = data.questions
+    
+    if not questions_list:
+        if "Behavioral" in category or "Leadership" in category:
+            questions_list = [
+                "Describe a situation where you identified a severe architectural flaw right before a major product launch. How did you handle the trade-off between release schedule and technical debt?",
+                "Walk us through how you resolve severe engineering disagreement over technology selection when team members hold conflicting opinions.",
+                "How do you structure mentorship and code review standards to elevate junior engineers without slowing down sprint delivery velocity?",
+                "Give an example of when you had to push back against unrealistic executive or product requirements using quantitative engineering metrics.",
+                "Describe a post-mortem you led after a production outage. What structural changes did you enforce to guarantee zero recurrence?"
+            ]
+        elif "Quick-Fire" in category or "Rapid" in category:
+            questions_list = [
+                "What exact algorithmic complexity difference exists between B-Tree and LSM-Tree storage engines during high-throughput random writes?",
+                "Explain how TCP Fast Open reduces handshake latency and what security/amplification trade-offs accompany it.",
+                "Under what precise network conditions does a distributed Consensus protocol (like Raft or Paxos) elect a split-brain leader, and how is it mitigated?",
+                "How does the Linux kernel epoll mechanism scale better than select or poll when monitoring 100,000 concurrent network sockets?",
+                "Compare the garbage collection latency characteristics between Generational ZGC and G1GC under multi-gigabyte heap pressure."
+            ]
+        else:
+            questions_list = [
+                "How would you architect a horizontally scalable distributed web application capable of handling 10 million daily active users with sub-100ms P99 latency globally?",
+                "Walk me through your diagnostic methodology when a high-throughput relational database encounters sudden connection starvation and severe query latency spikes under peak load.",
+                "Describe how you design multi-region disaster recovery (DR) strategies with strict RPO=0 and RTO<60 seconds without doubling infrastructure operational expenses.",
+                "Explain how you design zero-downtime database schema evolutions and stateful service migrations across rolling Kubernetes cluster deployments.",
+                "How do you implement distributed tracing, rate-limiting token buckets, and circuit breaking at the API Gateway tier to protect downstream microservices?"
+            ]
+
+    session = models.InterviewSession(
+        user_id=current_user.id,
+        category=category,
+        questions=json.dumps(questions_list)
+    )
     db.add(session)
     db.commit()
     db.refresh(session)
+    return session
+
+@app.get("/api/interviews/{session_id}", response_model=schemas.SessionResponse)
+def get_interview_session(session_id: int, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    session = db.query(models.InterviewSession).filter(models.InterviewSession.id == session_id, models.InterviewSession.user_id == current_user.id).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Interview session not found")
     return session
 
 @app.get("/api/interviews/history", response_model=List[schemas.SessionResponse])

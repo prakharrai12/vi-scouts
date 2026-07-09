@@ -16,6 +16,19 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
 
+def ensure_schema():
+    from sqlalchemy import text
+    with engine.connect() as conn:
+        try:
+            conn.execute(text("ALTER TABLE sessions ADD COLUMN category VARCHAR DEFAULT 'General Technical & Architecture'"))
+        except Exception:
+            pass
+        try:
+            conn.execute(text("ALTER TABLE sessions ADD COLUMN questions TEXT DEFAULT '[]'"))
+        except Exception:
+            pass
+        conn.commit()
+
 def get_db():
     db = SessionLocal()
     try:

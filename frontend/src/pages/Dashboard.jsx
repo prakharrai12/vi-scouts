@@ -40,13 +40,19 @@ export default function Dashboard() {
     fetchHistory();
   }, [token, navigate]);
 
-  const startNewInterview = async () => {
+  const startNewInterview = async (category = "General Technical & Architecture", customQuestions = null) => {
     try {
+      const bodyPayload = {
+        category: typeof category === 'string' ? category : "General Technical & Architecture",
+        questions: customQuestions || (resumeData?.tailored_questions ? resumeData.tailored_questions : null)
+      };
       const response = await fetch(`${API_URL}/api/interviews`, {
         method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
-        }
+        },
+        body: JSON.stringify(bodyPayload)
       });
       if (response.ok) {
         const data = await response.json();
@@ -114,7 +120,7 @@ export default function Dashboard() {
             </p>
           </div>
           <button 
-            onClick={startNewInterview} 
+            onClick={() => startNewInterview("General Technical & Architecture")} 
             className="w-full sm:w-auto px-8 py-5 bg-black text-white font-mono text-sm uppercase tracking-widest font-bold border-2 border-black hover:bg-white hover:text-black transition-none duration-100 flex items-center justify-center shrink-0"
           >
             Launch Interview Session <ArrowUpRight className="ml-2 h-4 w-4 stroke-[1.5]" />
@@ -209,7 +215,7 @@ export default function Dashboard() {
               </span>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-0 border-2 border-black">
                 {resumeData.tailored_questions?.map((q, idx) => (
-                  <div key={idx} onClick={startNewInterview} className="group cursor-pointer p-6 border border-black bg-white hover:bg-black hover:text-white transition-none duration-100 flex flex-col justify-between min-h-[200px]">
+                  <div key={idx} onClick={() => startNewInterview("Resume Tailored Competency Track", [q, ...resumeData.tailored_questions.filter(item => item !== q)])} className="group cursor-pointer p-6 border border-black bg-white hover:bg-black hover:text-white transition-none duration-100 flex flex-col justify-between min-h-[200px]">
                     <p className="font-body text-base leading-relaxed mb-6 group-hover:text-white">&ldquo;{q}&rdquo;</p>
                     <div className="font-mono text-xs uppercase tracking-widest font-bold flex items-center justify-between border-t border-neutral-300 group-hover:border-neutral-700 pt-4">
                       <span>PROMPT #{idx + 1}</span>
@@ -279,7 +285,7 @@ export default function Dashboard() {
           Featured Practice Tracks
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-0 border-2 border-black">
-          <div onClick={startNewInterview} className="group cursor-pointer p-8 bg-white border border-black hover:bg-black hover:text-white transition-none duration-100 flex flex-col justify-between min-h-[260px]">
+          <div onClick={() => startNewInterview("Technical & Architecture")} className="group cursor-pointer p-8 bg-white border border-black hover:bg-black hover:text-white transition-none duration-100 flex flex-col justify-between min-h-[260px]">
             <div>
               <span className="font-mono text-xs font-bold tracking-widest uppercase block mb-4">TRACK // 01</span>
               <h3 className="font-display font-bold text-2xl uppercase tracking-tight mb-3">Technical & Architecture</h3>
@@ -291,7 +297,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div onClick={startNewInterview} className="group cursor-pointer p-8 bg-white border border-black hover:bg-black hover:text-white transition-none duration-100 flex flex-col justify-between min-h-[260px]">
+          <div onClick={() => startNewInterview("Behavioral & Leadership")} className="group cursor-pointer p-8 bg-white border border-black hover:bg-black hover:text-white transition-none duration-100 flex flex-col justify-between min-h-[260px]">
             <div>
               <span className="font-mono text-xs font-bold tracking-widest uppercase block mb-4">TRACK // 02</span>
               <h3 className="font-display font-bold text-2xl uppercase tracking-tight mb-3">Behavioral & Leadership</h3>
@@ -303,7 +309,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div onClick={startNewInterview} className="group cursor-pointer p-8 bg-white border border-black hover:bg-black hover:text-white transition-none duration-100 flex flex-col justify-between min-h-[260px]">
+          <div onClick={() => startNewInterview("Rapid Quick-Fire")} className="group cursor-pointer p-8 bg-white border border-black hover:bg-black hover:text-white transition-none duration-100 flex flex-col justify-between min-h-[260px]">
             <div>
               <span className="font-mono text-xs font-bold tracking-widest uppercase block mb-4">TRACK // 03</span>
               <h3 className="font-display font-bold text-2xl uppercase tracking-tight mb-3">Rapid Quick-Fire</h3>
@@ -328,7 +334,7 @@ export default function Dashboard() {
           <div className="border-2 border-black border-dashed p-12 text-center space-y-6 bg-neutral-50">
             <h3 className="text-2xl font-display font-bold uppercase text-black">No past sessions recorded</h3>
             <p className="font-body text-neutral-600 max-w-md mx-auto">Launch an interview session now to generate objective semantic scores and architectural feedback.</p>
-            <button onClick={startNewInterview} className="px-8 py-4 bg-black text-white font-mono text-xs uppercase tracking-widest font-bold border-2 border-black hover:bg-white hover:text-black transition-none duration-100">
+            <button onClick={() => startNewInterview("General Technical & Architecture")} className="px-8 py-4 bg-black text-white font-mono text-xs uppercase tracking-widest font-bold border-2 border-black hover:bg-white hover:text-black transition-none duration-100">
               Initialize First Assessment
             </button>
           </div>

@@ -1,5 +1,6 @@
-from pydantic import BaseModel, EmailStr, Field
-from typing import Optional, List
+import json
+from pydantic import BaseModel, EmailStr, Field, field_validator
+from typing import Optional, List, Any
 from datetime import datetime
 
 # User Schemas
@@ -48,11 +49,29 @@ class FeedbackResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class SessionCreate(BaseModel):
+    category: Optional[str] = "General Technical & Architecture"
+    questions: Optional[List[str]] = None
+
 class SessionResponse(BaseModel):
     id: int
     user_id: int
+    category: Optional[str] = "General Technical & Architecture"
+    questions: Optional[List[str]] = []
     created_at: datetime
     feedbacks: List[FeedbackResponse] = []
+
+    @field_validator("questions", mode="before")
+    @classmethod
+    def parse_questions(cls, v: Any) -> List[str]:
+        if isinstance(v, str):
+            try:
+                return json.loads(v)
+            except Exception:
+                return []
+        if isinstance(v, list):
+            return v
+        return []
 
     class Config:
         from_attributes = True

@@ -1,64 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import useStore from '../store/useStore';
 import { Loader2, ArrowRight, RefreshCw, Check } from 'lucide-react';
 import { API_URL } from '../lib/utils';
-
-const QUESTIONS_BY_CATEGORY = [
-  {
-    category: "System Design & Scalability",
-    question: "How would you design a distributed web application capable of handling 10 million daily active users with sub-100ms latency?",
-    sampleAnswer: "I would adopt a microservices architecture behind a global Content Delivery Network (CDN) like Cloudflare for static assets and edge caching. For dynamic traffic, I would use an AWS API Gateway with rate-limiting leading to horizontally scaled Kubernetes clusters running stateless services. For data persistence, a sharded PostgreSQL database with read replicas would handle relational queries, combined with Redis clustered caching for hot key retrieval and Kafka for asynchronous background job processing."
-  },
-  {
-    category: "Technical & Debugging",
-    question: "Tell me about a time you had to diagnose and resolve a severe performance bottleneck or production outage.",
-    sampleAnswer: "During a peak shopping event, our checkout API latency spiked to over 6 seconds, causing cart abandonments. I immediately checked Datadog APM traces and noticed a high database wait time. Using EXPLAIN ANALYZE on our ORM queries, I discovered an N+1 query loop fetching user discount codes without proper indexing. I deployed a hotfix adding a composite database index and refactored the ORM to eager loading. Latency dropped by 92% to under 250ms within 20 minutes."
-  },
-  {
-    category: "Behavioral & Leadership",
-    question: "How do you handle severe disagreements regarding architectural or design trade-offs with senior team members?",
-    sampleAnswer: "I believe strong engineering culture relies on objective discussions rather than subjective opinions. When a senior colleague and I disagreed on whether to use GraphQL or REST for our mobile backend, I proposed writing a small benchmark comparing payload sizes and client caching complexity. We reviewed the quantitative results together with the team, agreed that REST with custom field masks best fit our timeline, and aligned smoothly without any personal friction."
-  },
-  {
-    category: "Frontend Architecture",
-    question: "Describe your approach to state management, re-render optimization, and bundle splitting in a large React application.",
-    sampleAnswer: "For global server state, I utilize TanStack React Query for automated caching and background synchronization. For lightweight UI state, I use atomic stores like Zustand to avoid unnecessary context re-render cascades. To optimize bundle performance, I implement route-level code splitting via React.lazy and Suspense, coupled with memoization using useMemo and React.memo strictly where React DevTools Profiler indicates render cost anomalies."
-  },
-  {
-    category: "Backend & RESTful APIs",
-    question: "What strategies do you use to ensure REST API idempotency, versioning, and robust rate-limiting in production environments?",
-    sampleAnswer: "To guarantee idempotency for POST/PUT endpoints, I require clients to include an Idempotency-Key header stored in Redis with a 24-hour TTL, ensuring retry requests return the cached response without duplicate side effects. For versioning, I prefer URL path prefixing (/api/v1/) combined with semantic deprecation headers. For rate-limiting, I implement token bucket algorithms at the API Gateway layer using Redis sliding window counters per authenticated user ID."
-  },
-  {
-    category: "Data Structures & Algorithms",
-    question: "Explain the difference between optimistic and pessimistic concurrency control in database transactions, and when to choose each.",
-    sampleAnswer: "Pessimistic concurrency locks database records when read, preventing simultaneous updates until the transaction commits, which is ideal for high-collision scenarios like inventory reservation or financial ledger balances. Optimistic concurrency uses a version timestamp or hash column to detect conflicts at commit time, avoiding expensive read locks, making it superior for read-heavy or low-collision web workflows like user profile updates."
-  },
-  {
-    category: "DevOps & Cloud Resilience",
-    question: "How do you structure zero-downtime deployment pipelines for stateful services and schema migrations?",
-    sampleAnswer: "I follow the expand-and-contract (blue/green) pattern for database schema evolutions. First, we expand the schema by adding nullable columns or views without breaking old code. Next, we deploy application v2 using rolling Kubernetes pods with health probes to write to both columns. Finally, after data backfill verification, we deploy v3 to contract and drop the old legacy column, ensuring continuous zero-downtime availability throughout the transition."
-  },
-  {
-    category: "AI & Machine Learning Systems",
-    question: "How do you mitigate LLM hallucination and ensure factual accuracy when building production Retrieval-Augmented Generation (RAG) pipelines?",
-    sampleAnswer: "To mitigate hallucinations, I design a multi-stage RAG pipeline using hybrid retrieval (BM25 sparse + dense embeddings via vector search like pgvector/Pinecone), followed by a re-ranker model like Cohere to select the top 5 highest-relevance chunks. In the LLM prompt, I enforce strict system constraints instructing the model to rely exclusively on context and cite specific chunk IDs, combining automated factual verification checks and semantic similarity evaluations before presenting answers to end users."
-  }
-];
 
 export default function InterviewRoom() {
   const { id } = useParams();
   const { token } = useStore();
   const navigate = useNavigate();
   
+  const [sessionData, setSessionData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [questionIdx, setQuestionIdx] = useState(0);
   const [answer, setAnswer] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState(null);
 
-  const currentItem = QUESTIONS_BY_CATEGORY[questionIdx];
-  const currentQuestion = currentItem.question;
+  useEffect(() => {
+    const fetchSession = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/interviews/${id}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setSessionData(data);
+          if (data?.questions && data.questions.length > 0) {
+            const firstQ = data.questions[0];
+            const existing = data.feedbacks?.find(f => f.question === firstQ);
+            if (existing) {
+              setFeedback(existing);
+              setAnswer(existing.answer || '');
+            }
+          }
+        } else {
+          console.error("Failed to fetch session");
+        }
+      } catch (err) {
+        console.error("Error fetching session:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    if (token) fetchSession();
+  }, [id, token]);
+
+  const questionsList = (sessionData?.questions && sessionData.questions.length > 0)
+    ? sessionData.questions
+    : [
+        "How would you architect a horizontally scalable distributed web application capable of handling 10 million daily active users with sub-100ms P99 latency globally?",
+        "Walk me through your diagnostic methodology when a high-throughput relational database encounters sudden connection starvation and severe query latency spikes under peak load.",
+        "Describe how you design multi-region disaster recovery (DR) strategies with strict RPO=0 and RTO<60 seconds without doubling infrastructure operational expenses.",
+        "Explain how you design zero-downtime database schema evolutions and stateful service migrations across rolling Kubernetes cluster deployments.",
+        "How do you implement distributed tracing, rate-limiting token buckets, and circuit breaking at the API Gateway tier to protect downstream microservices?"
+      ];
+
+  const currentQuestion = questionsList[questionIdx] || questionsList[0] || "";
+  const categoryName = sessionData?.category || "General Technical & Architecture";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -82,6 +80,14 @@ export default function InterviewRoom() {
       
       const data = await response.json();
       setFeedback(data);
+      // Refresh session data to reflect newly saved feedback
+      const res = await fetch(`${API_URL}/api/interviews/${id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setSessionData(updated);
+      }
     } catch (error) {
       console.error(error);
       alert("Evaluation failed. Please make sure the backend API is running.");
@@ -91,28 +97,36 @@ export default function InterviewRoom() {
   };
 
   const handleNext = () => {
-    if (questionIdx < QUESTIONS_BY_CATEGORY.length - 1) {
-      setQuestionIdx(prev => prev + 1);
-      setAnswer('');
-      setFeedback(null);
+    if (questionIdx < questionsList.length - 1) {
+      const nextIdx = questionIdx + 1;
+      setQuestionIdx(nextIdx);
+      const nextQ = questionsList[nextIdx];
+      const existing = sessionData?.feedbacks?.find(f => f.question === nextQ);
+      setFeedback(existing || null);
+      setAnswer(existing?.answer || '');
     } else {
       navigate('/dashboard');
     }
   };
 
-  const fillSampleAnswer = () => {
-    setAnswer(currentItem.sampleAnswer);
-  };
+  if (isLoading) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-4 py-12">
+        <Loader2 className="h-10 w-10 animate-spin text-black" />
+        <p className="font-mono text-sm font-bold uppercase tracking-widest text-black">Loading Real AI Assessment Room #{id}...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-12 py-6">
       {/* Editorial Header & Prompt Selector */}
-      <div className="border-4 border-black bg-white p-6 md:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+      <div className="border-4 border-black bg-white p-6 md:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-[4px_4px_0px_0px_#000]">
         <div className="space-y-2">
-          <div className="flex items-center space-x-3 font-mono text-xs uppercase tracking-widest text-neutral-500">
-            <span>ASSESSMENT SESSION #{id}</span>
+          <div className="flex items-center space-x-3 font-mono text-xs uppercase tracking-widest text-neutral-600 font-bold">
+            <span className="bg-black text-white px-2 py-0.5">SESSION #{id}</span>
             <span>//</span>
-            <span>{currentItem.category}</span>
+            <span>{categoryName}</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-display font-black uppercase tracking-tight text-black">
             Rigorous Interview Room
@@ -120,43 +134,51 @@ export default function InterviewRoom() {
         </div>
         
         <div className="flex items-center flex-wrap gap-2">
-          {QUESTIONS_BY_CATEGORY.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => {
-                setQuestionIdx(i);
-                setAnswer('');
-                setFeedback(null);
-              }}
-              className={`w-10 h-10 font-mono text-xs font-bold transition-none border border-black flex items-center justify-center ${
-                questionIdx === i 
-                  ? 'bg-black text-white' 
-                  : 'bg-white text-black hover:bg-neutral-100'
-              }`}
-            >
-              {i + 1}
-            </button>
-          ))}
+          {questionsList.map((qText, i) => {
+            const isEvaluated = sessionData?.feedbacks?.some(f => f.question === qText);
+            return (
+              <button
+                key={i}
+                onClick={() => {
+                  setQuestionIdx(i);
+                  const existing = sessionData?.feedbacks?.find(f => f.question === qText);
+                  setFeedback(existing || null);
+                  setAnswer(existing?.answer || '');
+                }}
+                className={`w-10 h-10 font-mono text-xs font-bold transition-none border border-black flex items-center justify-center relative ${
+                  questionIdx === i 
+                    ? 'bg-black text-white shadow-[2px_2px_0px_0px_#22d3ee]' 
+                    : isEvaluated
+                    ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                    : 'bg-white text-black hover:bg-neutral-100'
+                }`}
+                title={qText}
+              >
+                {i + 1}
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {!feedback ? (
-        <div className="border-4 border-black bg-white space-y-0">
-          <div className="p-8 md:p-12 border-b-2 border-black space-y-6 bg-horizontal-lines">
+        <div className="border-4 border-black bg-white shadow-[6px_6px_0px_0px_#000]">
+          {/* High-Contrast Faint-Free Question Banner */}
+          <div className="p-8 md:p-12 border-b-4 border-black bg-[#111111] text-white space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <span className="font-mono text-xs font-bold uppercase tracking-widest border border-black bg-white px-3 py-1">
+              <span className="font-mono text-xs font-bold uppercase tracking-widest border border-white bg-black text-white px-3 py-1.5 shadow-[2px_2px_0px_0px_#22d3ee]">
                 PROMPT #{questionIdx + 1} // AI EVALUATION ENGINE
               </span>
               <button 
                 type="button"
-                onClick={fillSampleAnswer}
+                onClick={() => setAnswer("To architect a highly resilient, distributed system capable of handling strict P99 latency SLAs, I implement a multi-stage approach. First, at the edge tier, I utilize Cloudflare anycast routing to offload static assets and TLS termination. For the application layer, horizontally auto-scaled Kubernetes pods run stateless Go/Node APIs behind an API Gateway enforcing token-bucket rate limiting via Redis cluster. For data persistence, a sharded PostgreSQL architecture separates read replicas from high-throughput master writers, while Kafka buffers background asynchronous events and outbox domain workflows, ensuring strict zero-data-loss durability and sub-100ms end-user responses.")}
                 disabled={isSubmitting}
-                className="font-mono text-xs font-bold uppercase tracking-widest border border-black px-4 py-2 hover:bg-black hover:text-white transition-none duration-100 self-start sm:self-auto"
+                className="font-mono text-xs font-bold uppercase tracking-widest border border-white bg-neutral-900 text-neutral-300 px-4 py-2 hover:bg-white hover:text-black transition-none duration-100 self-start sm:self-auto"
               >
-                Insert High-Scoring Benchmark Answer &rarr;
+                Insert High-Scoring Reference Structure &rarr;
               </button>
             </div>
-            <h2 className="text-2xl sm:text-4xl md:text-5xl font-display font-black leading-tight text-black">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-display font-black leading-tight text-white tracking-normal drop-shadow-sm">
               &ldquo;{currentQuestion}&rdquo;
             </h2>
           </div>
@@ -186,9 +208,9 @@ export default function InterviewRoom() {
                   className="w-full sm:w-auto px-10 py-5 bg-black text-white font-mono text-sm uppercase tracking-widest font-bold border-2 border-black hover:bg-white hover:text-black transition-none duration-100 flex items-center justify-center disabled:opacity-50 shrink-0"
                 >
                   {isSubmitting ? (
-                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Evaluating via OpenRouter...</>
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Evaluating via OpenRouter Engine...</>
                   ) : (
-                    <>Submit For Assessment &rarr;</>
+                    <>Submit For AI Assessment &rarr;</>
                   )}
                 </button>
               </div>
@@ -198,7 +220,7 @@ export default function InterviewRoom() {
       ) : (
         <div className="space-y-12">
           {/* Evaluation Banner */}
-          <div className="border-4 border-black bg-black text-white p-8 rounded-none flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 bg-inverted-lines">
+          <div className="border-4 border-black bg-black text-white p-8 rounded-none flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 bg-inverted-lines shadow-[6px_6px_0px_0px_#000]">
             <div className="space-y-2">
               <span className="font-mono text-xs uppercase tracking-widest text-neutral-400">EVALUATION REPORT // GENERATED</span>
               <h2 className="text-3xl font-display font-black uppercase text-white">Semantic Assessment Complete</h2>
@@ -212,7 +234,7 @@ export default function InterviewRoom() {
           </div>
 
           {/* Scores Monograph Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-0 border-4 border-black bg-white">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-0 border-4 border-black bg-white shadow-[6px_6px_0px_0px_#000]">
             <div className="p-10 border-b md:border-b-0 md:border-r-2 border-black flex flex-col items-center justify-center text-center space-y-2">
               <span className="font-mono text-xs font-bold uppercase tracking-widest text-neutral-600">CONFIDENCE & RIGOR SCORE</span>
               <div className="text-7xl font-display font-black text-black my-2">
@@ -228,7 +250,7 @@ export default function InterviewRoom() {
           </div>
 
           {/* Feedback Monograph Content */}
-          <div className="border-4 border-black bg-white divide-y-4 divide-black">
+          <div className="border-4 border-black bg-white divide-y-4 divide-black shadow-[6px_6px_0px_0px_#000]">
             <div className="p-8 md:p-12 space-y-4">
               <div className="flex items-center space-x-3 border-b border-black pb-3">
                 <Check className="h-5 w-5 stroke-[2.5]" />
@@ -269,9 +291,9 @@ export default function InterviewRoom() {
           <div className="flex justify-end pt-4">
             <button 
               onClick={handleNext} 
-              className="px-10 py-5 bg-black text-white font-mono text-sm uppercase tracking-widest font-bold border-2 border-black hover:bg-white hover:text-black transition-none duration-100 flex items-center justify-center"
+              className="px-10 py-5 bg-black text-white font-mono text-sm uppercase tracking-widest font-bold border-2 border-black hover:bg-white hover:text-black transition-none duration-100 flex items-center justify-center shadow-[4px_4px_0px_0px_#000]"
             >
-              {questionIdx < QUESTIONS_BY_CATEGORY.length - 1 ? (
+              {questionIdx < questionsList.length - 1 ? (
                 <>Next Assessment Question &rarr;</>
               ) : (
                 <>Return to Dashboard &rarr;</>
