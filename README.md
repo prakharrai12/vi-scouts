@@ -1,11 +1,20 @@
 # 🧠 VI-SCOUTS | Next-Gen AI Candidate Assessment Platform
 
 <p align="center">
-  <img src="docs/preview.png" alt="VI-SCOUTS Platform Preview" width="900" style="border: 4px solid #000000; box-shadow: 8px 8px 0px 0px #000000;" />
+  <a href="https://vi-scouts-rms9qderl-prakharrai12s-projects.vercel.app/">
+    <img src="https://img.shields.io/badge/Live_Deployment-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Live on Vercel" />
+  </a>
 </p>
 
 <p align="center">
-  <strong>Practice realistic technical, behavioral, and architectural interviews with real-time AI semantic feedback and precision scoring.</strong>
+  <a href="https://vi-scouts-rms9qderl-prakharrai12s-projects.vercel.app/">
+    <img src="docs/preview.png" alt="VI-SCOUTS Platform Preview" width="900" style="border: 4px solid #000000; box-shadow: 8px 8px 0px 0px #000000;" />
+  </a>
+</p>
+
+<p align="center">
+  <strong>Practice realistic technical, behavioral, and architectural interviews with real-time AI semantic feedback and precision scoring.</strong><br/>
+  🌐 <a href="https://vi-scouts-rms9qderl-prakharrai12s-projects.vercel.app/"><strong>Launch Live Application &rarr;</strong></a>
 </p>
 
 ---
@@ -28,6 +37,14 @@
 
 - **Frontend**: React 18, Vite, Tailwind CSS, Framer Motion, Lucide Icons
 - **Backend**: Python 3.11+, FastAPI, Uvicorn, SQLite, Google Gemini AI (`google-genai` SDK)
+
+---
+
+## 🌐 Live Deployed Application
+
+Experience the platform live on Vercel instantly without local installation:
+- **Production URL**: [https://vi-scouts-rms9qderl-prakharrai12s-projects.vercel.app/](https://vi-scouts-rms9qderl-prakharrai12s-projects.vercel.app/)
+- **API Status**: All FastAPI endpoints (`/api/*`, `/auth/*`) are deployed serverlessly on AWS Lambda/Vercel with automatic SQLite in-memory persistence.
 
 ---
 
@@ -83,7 +100,7 @@
 ---
 
 ## 💡 Demo Login Credentials
-To test the platform immediately after starting the servers, click **"Login with Demo ID"** on the landing page or use:
+To test the platform immediately (both on the [live Vercel deployment](https://vi-scouts-rms9qderl-prakharrai12s-projects.vercel.app/) or locally), click **"Login with Demo ID"** on the landing page or use:
 - **Email**: `demo@vi-scouts.com`
 - **Password**: `password123`
 
