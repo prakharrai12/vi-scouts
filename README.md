@@ -1,86 +1,92 @@
-# AI Interview Simulator
+# 🧠 VI-SCOUTS | Next-Gen AI Candidate Assessment Platform
 
-A polished full-stack interview practice app.
+<p align="center">
+  <img src="docs/preview.png" alt="VI-SCOUTS Platform Preview" width="800" style="border-radius: 12px; box-shadow: 0 10px 30px rgba(6, 182, 212, 0.3);" />
+</p>
 
-## Overview
+<p align="center">
+  <strong>Practice realistic technical, behavioral, and architectural interviews with real-time AI semantic feedback and precision scoring.</strong>
+</p>
 
-This project includes:
-- `frontend/` — React + Vite + Tailwind UI for submitting interview answers and reviewing AI feedback.
-- `backend/` — FastAPI service that evaluates answers using Google Gemini AI.
+---
 
-## Features
+## ✨ Overview
 
-- Modern React UI with Tailwind styling
-- Backend API for answer evaluation
-- `npm` frontend workflow with Vite proxy support
-- `.env`-based backend configuration
+**VI-SCOUTS** is an enterprise-grade, dynamic AI interview practice suite designed with a **High-Maintenance Cyan & Deep Teal Luxury Glassmorphism** aesthetic. It enables candidates to test their skills across demanding technical trade-offs, STAR-method leadership questions, and rapid quick-fire scenarios while receiving instant clarity and confidence analytics.
 
-## Prerequisites
+### 🔥 Key Features
+- **🎨 High-Maintenance Cyan Luxury UI/UX**: Built with modern glassmorphism, ambient glowing accents, smooth framer-motion micro-animations, and crystal-clear typography.
+- **🤖 Real-Time Semantic Evaluation Engine**: Deep domain-aware AI scoring using **Google Gemini** (with smart local fallback heuristics) to evaluate structural articulation, confidence, and clarity.
+- **⚡ One-Click Demo Credentials**: Test the platform instantly without friction using pre-configured candidate accounts (`demo@vi-scouts.com`).
+- **📊 Comprehensive Practice Tracks**: Dedicated assessment paths for *Technical & Architecture*, *Behavioral & Leadership*, and *Rapid Quick-Fire* interviews.
+- **📈 Historical Session Tracking**: Interactive dashboard logging all past assessment scores and progress trajectories.
 
-- Node.js 18+ and npm
-- Python 3.10+ (recommended 3.11+)
-- Google Gemini API key
+---
 
-## Setup
+## 🛠️ Technology Stack
 
-### Backend
+- **Frontend**: React 18, Vite, Tailwind CSS, Framer Motion, Lucide Icons
+- **Backend**: Python 3.11+, FastAPI, Uvicorn, SQLite, Google Gemini AI (`google-genai` SDK)
 
-1. Open a terminal and change to `backend/`
-2. Create a virtual environment:
+---
+
+## 🚀 Quick Setup & Installation
+
+### Prerequisites
+- **Node.js** 18+ & **npm**
+- **Python** 3.10+ (recommended 3.11+)
+
+### 1️⃣ Backend Setup
+1. Open a terminal and navigate to the `backend/` directory:
+   ```powershell
+   cd backend
+   ```
+2. Create and activate a Python virtual environment:
    ```powershell
    python -m venv venv
-   ```
-3. Activate it:
-   ```powershell
    .\venv\Scripts\Activate
    ```
-4. Install dependencies:
+3. Install dependencies:
    ```powershell
    pip install -r requirements.txt
    ```
-5. Copy the example env file:
+4. Configure environment variables:
    ```powershell
    copy .env.example .env
    ```
-6. Add your API key to `.env`:
-   ```text
-   GOOGLE_API_KEY=your_google_api_key
+   *(Optional: Edit `.env` and insert your `GOOGLE_API_KEY` to enable live Google Gemini evaluations).*
+
+5. Start the backend API server:
+   ```powershell
+   python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
    ```
 
-### Frontend
+---
 
-1. Open a terminal and change to `frontend/`
+### 2️⃣ Frontend Setup
+1. Open a new terminal and navigate to the `frontend/` directory:
+   ```powershell
+   cd frontend
+   ```
 2. Install dependencies:
    ```powershell
    npm install
    ```
+3. Launch the development server:
+   ```powershell
+   npm run dev
+   ```
 
-## Running Locally
+4. Open your browser and visit: **`http://localhost:5173/`**
 
-Start the backend first:
+---
 
-```powershell
-cd backend
-.\venv\Scripts\Activate
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
-```
+## 💡 Demo Login Credentials
+To test the platform immediately after starting the servers, click **"Login with Demo ID"** on the landing page or use:
+- **Email**: `demo@vi-scouts.com`
+- **Password**: `password123`
 
-Then start the frontend:
+---
 
-```powershell
-cd frontend
-npm run dev
-```
-
-The app will be available at `http://localhost:5173/`.
-
-## Production Build
-
-Build the frontend:
-
-```powershell
-cd frontend
-npm run build
-```
-
-Serve the backend with `uvicorn main:app --host 0.0.0.0 --port 8000` and host the built frontend assets on a static server.
+## 📄 License
+© 2026 VI-SCOUTS Platform. All rights reserved.
