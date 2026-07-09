@@ -4,11 +4,23 @@
   "outputDirectory": "frontend/dist",
   "rewrites": [
     {
-      "source": "/(api|auth)(/.*)?",
+      "source": "/api",
       "destination": "/api/index.py"
     },
     {
-      "source": "/((?!(api|auth)(/|$)|assets/|.*\\.[a-zA-Z0-9]+$).*)",
+      "source": "/api/(.*)",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/auth",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/auth/(.*)",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/((?!api/|auth/|assets/|.*\\.[a-zA-Z0-9]+$).*)",
       "destination": "/index.html"
     }
   ]
