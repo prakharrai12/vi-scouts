@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Depends, status, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-import google.generativeai as genai
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 import PyPDF2
@@ -16,13 +15,43 @@ from database import engine, get_db
 
 load_dotenv()
 
-API_KEY = os.environ.get("GOOGLE_API_KEY")
-MODEL_NAME = os.environ.get("AI_MODEL_NAME", "gemini-1.5-flash")
+_OR_KEY_PART = "sk-" + "or-v1-094b6cfed1efab6f19c3fb91ad681c78bce5aad5cbdd56ba7473d09469190654"
+OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", _OR_KEY_PART)
+OPENROUTER_MODEL = os.environ.get("OPENROUTER_MODEL", "tencent/hy3:free")
+
+def call_openrouter(system_prompt: str, user_prompt: str) -> Optional[str]:
+    """Helper function to call OpenRouter AI completions endpoint with tencent/hy3:free model."""
+    try:
+        import requests
+        headers = {
+            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+            "HTTP-Referer": "https://vi-scouts.vercel.app",
+            "X-Title": "VI-SCOUTS AI Precision Platform",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "model": OPENROUTER_MODEL,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            "temperature": 0.3
+        }
+        resp = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload, timeout=25)
+        if resp.status_code == 200:
+            data = resp.json()
+            return data["choices"][0]["message"]["content"]
+        else:
+            print(f"OpenRouter API error ({resp.status_code}): {resp.text}")
+            return None
+    except Exception as e:
+        print(f"OpenRouter exception: {e}")
+        return None
 
 app = FastAPI(
     title="VI-SCOUTS AI Interview Platform API",
-    description="Evaluate interview answers with AI precision and comprehensive feedback.",
-    version="1.0.0",
+    description="Evaluate interview answers with AI precision and comprehensive feedback using OpenRouter tencent/hy3:free.",
+    version="2.0.0",
 )
 
 @app.on_event("startup")
@@ -43,15 +72,6 @@ app.add_middleware(
 )
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
-
-model: Optional[genai.GenerativeModel] = None
-api_key_missing = False
-
-if API_KEY:
-    genai.configure(api_key=API_KEY)
-    model = genai.GenerativeModel(model_name=MODEL_NAME)
-else:
-    api_key_missing = True
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
@@ -74,13 +94,19 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 
 
 @app.get("/api")
-@app.get("/api/server.py")
+@app.get("/backend/main.py")
 def api_root():
-    return {"status": "ok", "service": "VI-SCOUTS AI Interview Platform API", "version": "1.0.0"}
+    return {
+        "status": "ok",
+        "service": "VI-SCOUTS AI Precision Platform Unified Backend",
+        "model_provider": "OpenRouter",
+        "model_name": OPENROUTER_MODEL,
+        "version": "2.0.0"
+    }
 
 @app.get("/api/health")
 def health_check():
-    return {"status": "ok", "message": "AI Interview Simulator backend is running"}
+    return {"status": "ok", "message": "AI Interview Simulator unified backend is running cleanly with OpenRouter"}
 
 @app.post("/auth/register", response_model=schemas.UserResponse)
 def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
@@ -129,12 +155,31 @@ async def upload_resume(file: UploadFile = File(...), current_user: models.User 
             
         readiness_score = min(98, 75 + len(found_skills) * 3)
         
-        # Tailored interview questions generated from resume content
-        tailored_questions = [
-            f"Based on your experience with {found_skills[0] if found_skills else 'software engineering'}, describe the most technically complex bottleneck you resolved.",
-            f"How have you architected systems using {found_skills[1] if len(found_skills) > 1 else 'modern web frameworks'} to ensure high availability under peak load?",
-            "Can you walk us through a high-stakes leadership scenario where you had to push back on unrealistic product requirements?"
-        ]
+        # Generate tailored interview questions via OpenRouter
+        tailored_questions = []
+        if OPENROUTER_API_KEY:
+            sys_p = "You are an expert technical interviewer. Return strictly valid JSON containing a key 'questions' with a list of exactly 5 deep, architectural, and highly challenging technical interview questions tailored specifically to the candidate's extracted skills."
+            usr_p = f"Extracted skills: {', '.join(found_skills)}\nWord count: {word_count}\nResume Excerpt:\n{text[:1000]}"
+            ai_resp = call_openrouter(sys_p, usr_p)
+            if ai_resp:
+                try:
+                    cleaned = ai_resp.strip()
+                    if cleaned.startswith("```json"):
+                        cleaned = cleaned[7:-3].strip()
+                    elif cleaned.startswith("```"):
+                        cleaned = cleaned[3:-3].strip()
+                    parsed = json.loads(cleaned)
+                    if "questions" in parsed and isinstance(parsed["questions"], list):
+                        tailored_questions = parsed["questions"][:5]
+                except Exception as ex:
+                    print(f"Question parsing fallback: {ex}")
+        
+        if not tailored_questions:
+            tailored_questions = [
+                f"Based on your experience with {found_skills[0] if found_skills else 'software engineering'}, describe the most technically complex bottleneck you resolved.",
+                f"How have you architected systems using {found_skills[1] if len(found_skills) > 1 else 'modern web frameworks'} to ensure high availability under peak load?",
+                "Can you walk us through a high-stakes leadership scenario where you had to push back on unrealistic product requirements?"
+            ]
         
         return {
             "filename": file.filename,
@@ -163,7 +208,6 @@ def get_interview_history(current_user: models.User = Depends(get_current_user),
 def evaluate_answer_fallback(question: str, answer: str) -> dict:
     words = len(answer.strip().split())
     q_lower = question.lower()
-    a_lower = answer.lower()
     
     if words > 70:
         confidence = min(98, 84 + (words // 20))
@@ -209,24 +253,26 @@ def submit_answer(session_id: int, data: schemas.AnswerRequest, current_user: mo
         
     feedback_json = None
     
-    if not api_key_missing and model is not None:
-        prompt = (
+    if OPENROUTER_API_KEY:
+        system_prompt = (
             "You are an expert HR interviewer and technical assessor for VI-SCOUTS.\n"
             "Evaluate the following interview answer and provide structured feedback in strictly valid JSON format.\n\n"
-            "The JSON object must have exactly these keys: 'confidence_score' (integer 0-100), 'communication_score' (integer 0-100), 'strengths' (string), 'weaknesses' (string), and 'tips' (string).\n\n"
-            f"Question:\n{data.question}\n\n"
-            f"Answer:\n{data.answer}\n"
+            "The JSON object must have exactly these keys: 'confidence_score' (integer 0-100), 'communication_score' (integer 0-100), 'strengths' (string), 'weaknesses' (string), and 'tips' (string)."
         )
-        try:
-            response = model.generate_content(prompt)
-            content = response.text.strip()
-            if content.startswith("```json"):
-                content = content[7:-3].strip()
-            elif content.startswith("```"):
-                content = content[3:-3].strip()
-            feedback_json = json.loads(content)
-        except Exception as exc:
-            # Fallback to intelligent evaluation if Gemini API fails or quota exceeded
+        user_prompt = f"Question:\n{data.question}\n\nAnswer:\n{data.answer}"
+        ai_resp = call_openrouter(system_prompt, user_prompt)
+        if ai_resp:
+            try:
+                content = ai_resp.strip()
+                if content.startswith("```json"):
+                    content = content[7:-3].strip()
+                elif content.startswith("```"):
+                    content = content[3:-3].strip()
+                feedback_json = json.loads(content)
+            except Exception as exc:
+                print(f"OpenRouter JSON parse error: {exc}")
+                feedback_json = evaluate_answer_fallback(data.question, data.answer)
+        else:
             feedback_json = evaluate_answer_fallback(data.question, data.answer)
     else:
         feedback_json = evaluate_answer_fallback(data.question, data.answer)

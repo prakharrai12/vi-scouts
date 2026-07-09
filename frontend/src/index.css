@@ -1,7 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..700;1,8..60,400..700&display=swap');
 @import "tailwindcss";
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
+  --background: #FFFFFF;
+  --foreground: #000000;
+  --muted: #F5F5F5;
+  --muted-foreground: #525252;
+  --accent: #000000;
+  --accent-foreground: #FFFFFF;
+  --border: #000000;
+  --border-light: #E5E5E5;
+  --card: #FFFFFF;
+  --card-foreground: #000000;
+  --ring: #000000;
 }
 
 html {
@@ -12,47 +24,107 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: #050b14;
-  color: #f1f5f9;
+  font-family: 'Source Serif 4', Georgia, serif;
+  background-color: var(--background);
+  color: var(--foreground);
   overflow-x: hidden;
 }
 
 * {
   box-sizing: border-box;
+  border-radius: 0px !important;
 }
 
 button,
 textarea,
-input {
+input,
+select {
   font: inherit;
+  border-radius: 0px !important;
+}
+
+/* Typography utilities */
+.font-display {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+.font-body {
+  font-family: 'Source Serif 4', Georgia, serif;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
 }
 
 /* Custom Selection */
 ::selection {
-  background-color: rgba(6, 182, 212, 0.25);
-  color: #a5f3fc;
+  background-color: #000000;
+  color: #FFFFFF;
 }
 
-/* Glow & Glass Utilities */
-.glass-panel {
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(6, 182, 212, 0.18);
+/* Minimalist Monochrome Borders */
+.border-hairline {
+  border: 1px solid var(--border-light);
 }
 
-.cyan-glow {
-  box-shadow: 0 0 30px rgba(6, 182, 212, 0.2);
+.border-thin {
+  border: 1px solid var(--border);
 }
 
-.cyan-glow-lg {
-  box-shadow: 0 0 50px rgba(6, 182, 212, 0.35);
+.border-medium {
+  border: 2px solid var(--border);
 }
 
-.text-cyan-gradient {
-  background: linear-gradient(135deg, #22d3ee 0%, #2dd4bf 50%, #38bdf8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.border-thick {
+  border: 4px solid var(--border);
 }
 
+.border-ultra {
+  border: 8px solid var(--border);
+}
+
+/* Textures & Patterns */
+.bg-horizontal-lines {
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 1px,
+    #000 1px,
+    #000 2px
+  );
+  background-size: 100% 4px;
+  opacity: 0.015;
+}
+
+.bg-grid-pattern {
+  background-image:
+    linear-gradient(#00000008 1px, transparent 1px),
+    linear-gradient(90deg, #00000008 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.bg-diagonal-lines {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 40px,
+    #00000008 40px,
+    #00000008 42px
+  );
+}
+
+.bg-noise {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+.bg-inverted-lines {
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 1px,
+    #fff 1px,
+    #fff 2px
+  );
+  background-size: 4px 100%;
+  opacity: 0.03;
+}

@@ -1,10 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../components/ui/Card';
-import { Loader2, Brain } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Loader2, ArrowRight } from 'lucide-react';
 import { API_URL } from '../lib/utils';
 
 export default function Register() {
@@ -33,7 +29,6 @@ export default function Register() {
         throw new Error(errorData.detail || 'Failed to register');
       }
 
-      // Automatically redirect to login on success
       navigate('/login');
     } catch (err) {
       setError(err.message || 'Registration failed. Check backend server.');
@@ -43,66 +38,70 @@ export default function Register() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-[82vh] py-12">
-      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="w-full max-w-md space-y-8">
-        <div className="text-center space-y-3">
-          <div className="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-tr from-cyan-500 via-teal-400 to-cyan-300 p-4 shadow-[0_0_40px_rgba(6,182,212,0.4)] text-slate-950 flex items-center justify-center mb-4 transform hover:scale-105 transition-transform">
-            <Brain className="w-full h-full stroke-[2.5]" />
-          </div>
-          <h2 className="text-3xl font-black tracking-tight text-cyan-gradient">
-            Join VI-SCOUTS
-          </h2>
+    <div className="flex items-center justify-center min-h-[75vh] py-12">
+      <div className="w-full max-w-md bg-white border-2 border-black p-8 md:p-12 space-y-8 shadow-none">
+        <div className="border-b-2 border-black pb-6 space-y-2">
+          <p className="font-mono text-xs uppercase tracking-widest text-neutral-500">ENROLLMENT // MODULE</p>
+          <h1 className="text-3xl md:text-4xl font-display font-black uppercase tracking-tight text-black">
+            Register
+          </h1>
         </div>
 
-        <Card className="shadow-[0_10px_40px_rgba(0,0,0,0.6)] border-cyan-500/30 bg-slate-900/85 backdrop-blur-xl overflow-hidden rounded-3xl">
-          <CardHeader className="space-y-2 text-center bg-slate-950/60 p-8 pb-7 border-b border-slate-800">
-            <CardTitle className="text-2xl font-extrabold text-slate-100">Create Account</CardTitle>
-            <CardDescription className="text-slate-400 text-sm">Start practicing AI-assisted interviews for free</CardDescription>
-          </CardHeader>
-          <form onSubmit={handleRegister}>
-            <CardContent className="space-y-5 p-8 pt-6">
-              {error && (
-                <div className="bg-red-950/60 text-red-300 p-4 rounded-2xl text-sm text-center border border-red-500/40 font-bold animate-pulse">
-                  {error}
-                </div>
-              )}
-              <div className="space-y-2.5">
-                <label className="text-sm font-extrabold text-slate-200 tracking-wide">Email address</label>
-                <Input 
-                  type="email" 
-                  placeholder="name@example.com" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2.5">
-                <label className="text-sm font-extrabold text-slate-200 tracking-wide">Password</label>
-                <Input 
-                  type="password" 
-                  placeholder="Create a strong password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                />
-              </div>
-            </CardContent>
-            <CardFooter className="flex flex-col gap-5 p-8 pt-0">
-              <Button type="submit" className="w-full h-14 bg-gradient-to-r from-cyan-500 via-teal-400 to-cyan-400 hover:from-cyan-400 hover:to-teal-300 text-slate-950 font-black tracking-wide rounded-2xl shadow-[0_0_25px_rgba(6,182,212,0.35)] transition-all text-base" disabled={isLoading}>
-                {isLoading ? <Loader2 className="mr-2.5 h-5 w-5 animate-spin" /> : null}
-                Create Free Account
-              </Button>
-              <div className="text-center text-sm text-slate-400 font-medium">
-                Already have an account?{' '}
-                <Link to="/login" className="text-cyan-400 font-extrabold hover:underline hover:text-cyan-300 ml-1">
-                  Sign in here
-                </Link>
-              </div>
-            </CardFooter>
-          </form>
-        </Card>
-      </motion.div>
+        {error && (
+          <div className="bg-black text-white font-mono text-xs uppercase p-4 border border-black tracking-wider">
+            ERROR: {error}
+          </div>
+        )}
+
+        <form onSubmit={handleRegister} className="space-y-6">
+          <div className="space-y-2">
+            <label className="block font-mono text-xs uppercase tracking-widest font-bold text-black">
+              Email Address
+            </label>
+            <input 
+              type="email" 
+              placeholder="name@example.com" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full bg-white border-2 border-black px-4 py-3 text-black font-body placeholder:text-neutral-400 placeholder:italic focus:border-b-4 focus:outline-none transition-none"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="block font-mono text-xs uppercase tracking-widest font-bold text-black">
+              Password (Min. 6 Characters)
+            </label>
+            <input 
+              type="password" 
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+              className="w-full bg-white border-2 border-black px-4 py-3 text-black font-body placeholder:text-neutral-400 focus:border-b-4 focus:outline-none transition-none"
+            />
+          </div>
+
+          <div className="pt-4">
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full py-4 bg-black text-white font-mono text-sm uppercase tracking-widest font-bold border-2 border-black hover:bg-white hover:text-black transition-none duration-100 flex items-center justify-center disabled:opacity-50"
+            >
+              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Create Candidate Account <ArrowRight className="ml-2 h-4 w-4 stroke-[1.5]" />
+            </button>
+          </div>
+        </form>
+
+        <div className="border-t border-neutral-300 pt-6 text-center font-mono text-xs uppercase tracking-widest text-neutral-600">
+          Already Enrolled?{' '}
+          <Link to="/login" className="text-black font-bold underline hover:no-underline ml-1">
+            Candidate Login
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
