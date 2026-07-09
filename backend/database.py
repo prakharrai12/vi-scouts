@@ -16,22 +16,53 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
 
-def ensure_schema():
-    from sqlalchemy import text
-    with engine.connect() as conn:
-        try:
-            conn.execute(text("ALTER TABLE sessions ADD COLUMN category VARCHAR DEFAULT 'General Technical & Architecture'"))
-        except Exception:
-            pass
-        try:
-            conn.execute(text("ALTER TABLE sessions ADD COLUMN questions TEXT DEFAULT '[]'"))
-        except Exception:
-            pass
-        conn.commit()
+_has_seeded = False
+
+def ensure_schema_and_seed(db):
+    global _has_seeded
+    if _has_seeded:
+        return
+    try:
+        from sqlalchemy import text
+        import models
+        import auth
+
+        Base.metadata.create_all(bind=engine)
+
+        with engine.connect() as conn:
+            try:
+                conn.execute(text("ALTER TABLE sessions ADD COLUMN category VARCHAR DEFAULT 'General Technical & Architecture'"))
+            except Exception:
+                pass
+            try:
+                conn.execute(text("ALTER TABLE sessions ADD COLUMN questions TEXT DEFAULT '[]'"))
+            except Exception:
+                pass
+            conn.commit()
+
+        # Ensure demo account #1 exists
+        demo1 = db.query(models.User).filter(models.User.email == "demo@vi-scouts.com").first()
+        if not demo1:
+            hashed1 = auth.get_password_hash("password123")
+            demo1 = models.User(email="demo@vi-scouts.com", hashed_password=hashed1)
+            db.add(demo1)
+
+        # Ensure demo account #2 exists
+        demo2 = db.query(models.User).filter(models.User.email == "candidate@vi-scouts.com").first()
+        if not demo2:
+            hashed2 = auth.get_password_hash("candidate123")
+            demo2 = models.User(email="candidate@vi-scouts.com", hashed_password=hashed2)
+            db.add(demo2)
+
+        db.commit()
+        _has_seeded = True
+    except Exception as e:
+        print(f"Schema auto-seed check: {e}")
 
 def get_db():
     db = SessionLocal()
     try:
+        ensure_schema_and_seed(db)
         yield db
     finally:
         db.close()

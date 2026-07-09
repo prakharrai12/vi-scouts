@@ -91,7 +91,7 @@ export default function Login() {
             />
           </div>
 
-          <div className="pt-4">
+          <div className="pt-4 space-y-4">
             <button
               type="submit"
               disabled={isLoading}
@@ -100,6 +100,37 @@ export default function Login() {
               {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Authenticate Session <ArrowRight className="ml-2 h-4 w-4 stroke-[1.5]" />
             </button>
+
+            {/* Quick-Fill Dummy & Demo Credentials */}
+            <div className="pt-4 border-t border-black space-y-2">
+              <span className="block font-mono text-[11px] font-bold uppercase tracking-widest text-neutral-600">
+                ⚡ Quick-Launch Certified Test Credentials:
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail("demo@vi-scouts.com");
+                    setPassword("password123");
+                  }}
+                  className="p-2.5 border border-black bg-neutral-100 hover:bg-black hover:text-white font-mono text-[11px] font-bold uppercase tracking-wider text-left transition-none flex flex-col justify-between"
+                >
+                  <span>DEMO ACCOUNT #1</span>
+                  <span className="text-[10px] text-neutral-600 font-normal hover:text-neutral-300">demo@vi-scouts.com // password123</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail("candidate@vi-scouts.com");
+                    setPassword("candidate123");
+                  }}
+                  className="p-2.5 border border-black bg-neutral-100 hover:bg-black hover:text-white font-mono text-[11px] font-bold uppercase tracking-wider text-left transition-none flex flex-col justify-between"
+                >
+                  <span>DEMO ACCOUNT #2</span>
+                  <span className="text-[10px] text-neutral-600 font-normal hover:text-neutral-300">candidate@vi-scouts.com // candidate123</span>
+                </button>
+              </div>
+            </div>
           </div>
         </form>
 

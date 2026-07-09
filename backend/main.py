@@ -141,6 +141,17 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
 @app.post("/auth/login", response_model=schemas.Token)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.email == form_data.username).first()
+    
+    # Auto-seed demo accounts on the fly if queried on a fresh serverless cold instance
+    if not user and form_data.username in ["demo@vi-scouts.com", "candidate@vi-scouts.com"]:
+        default_pass = "password123" if form_data.username == "demo@vi-scouts.com" else "candidate123"
+        if form_data.password == default_pass:
+            hashed = auth.get_password_hash(default_pass)
+            user = models.User(email=form_data.username, hashed_password=hashed)
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+
     if not user or not auth.verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
