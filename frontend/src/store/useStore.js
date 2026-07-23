@@ -4,8 +4,12 @@ const useStore = create((set) => ({
   user: null,
   token: localStorage.getItem('token') || null,
   setToken: (token) => {
-    localStorage.setItem('token', token);
-    set({ token });
+    if (token) {
+      localStorage.setItem('token', token);
+    } else {
+      localStorage.removeItem('token');
+    }
+    set({ token: token || null });
   },
   logout: () => {
     localStorage.removeItem('token');
