@@ -8,10 +8,13 @@ except ImportError:
     from backend.models import Base, User
     from backend.auth import get_password_hash
 
-Base.metadata.create_all(bind=engine)
-
 def seed():
     """Seeds only the essential demo account without any mock sessions or dummy data."""
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception as ex:
+        print(f"Table creation notice during seed: {ex}")
+
     db = SessionLocal()
     try:
         email = "demo@vi-scouts.com"
