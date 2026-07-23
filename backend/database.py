@@ -24,8 +24,12 @@ def ensure_schema_and_seed(db):
         return
     try:
         from sqlalchemy import text
-        import models
-        import auth
+        try:
+            import models
+            import auth
+        except ImportError:
+            from backend import models
+            from backend import auth
 
         Base.metadata.create_all(bind=engine)
 
