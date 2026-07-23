@@ -79,6 +79,11 @@ Experience the platform live on Vercel instantly without local installation:
    python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
    ```
 
+6. Run automated test suite:
+   ```powershell
+   python -m pytest backend/test_main.py
+   ```
+
 ---
 
 ### 2️⃣ Frontend Setup
