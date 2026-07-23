@@ -238,13 +238,13 @@ export default function InterviewRoom() {
             <div className="p-10 border-b md:border-b-0 md:border-r-2 border-black flex flex-col items-center justify-center text-center space-y-2">
               <span className="font-mono text-xs font-bold uppercase tracking-widest text-neutral-600">CONFIDENCE & RIGOR SCORE</span>
               <div className="text-7xl font-display font-black text-black my-2">
-                {feedback.confidence_score}<span className="text-3xl">%</span>
+                {feedback?.confidence_score ?? 0}<span className="text-3xl">%</span>
               </div>
             </div>
             <div className="p-10 flex flex-col items-center justify-center text-center space-y-2">
               <span className="font-mono text-xs font-bold uppercase tracking-widest text-neutral-600">COMMUNICATION & CLARITY SCORE</span>
               <div className="text-7xl font-display font-black text-black my-2">
-                {feedback.communication_score}<span className="text-3xl">%</span>
+                {feedback?.communication_score ?? 0}<span className="text-3xl">%</span>
               </div>
             </div>
           </div>
