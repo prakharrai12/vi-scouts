@@ -1,5 +1,10 @@
 import json
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, Field, field_validator
+try:
+    from pydantic import EmailStr
+except ImportError:
+    EmailStr = str
+
 from typing import Optional, List, Any
 from datetime import datetime
 
@@ -33,6 +38,14 @@ class TokenData(BaseModel):
 class AnswerRequest(BaseModel):
     question: str = Field(..., description="The interview question being answered")
     answer: str = Field(..., min_length=1, description="Candidate interview answer text")
+
+    @field_validator("answer")
+    @classmethod
+    def sanitize_answer(cls, v: str) -> str:
+        cleaned = v.trim() if hasattr(v, "trim") else v.strip()
+        if not cleaned:
+            raise ValueError("Candidate answer cannot be empty or whitespace only")
+        return cleaned
 
 class FeedbackResponse(BaseModel):
     id: int
