@@ -31,3 +31,17 @@ extraPaths = ["backend", ".venv/Lib/site-packages", "backend/venv/Lib/site-packa
 venvPath = "."
 venv = ".venv"
 extraPaths = ["backend", ".venv/Lib/site-packages", "backend/venv/Lib/site-packages"]
+
+[tool.pytest.ini_options]
+testpaths = ["backend"]
+python_files = ["test_*.py"]
+pythonpath = [".", "backend"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py39"
+
+[tool.coverage.run]
+source = ["backend"]
+omit = ["*/venv/*", "*/__pycache__/*"]
+
