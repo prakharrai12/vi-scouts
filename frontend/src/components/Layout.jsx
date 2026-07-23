@@ -35,7 +35,7 @@ export default function Layout() {
             </div>
           </Link>
 
-          <nav className="flex items-center space-x-6 font-mono text-xs md:text-sm uppercase tracking-widest font-bold">
+          <nav aria-label="Main Navigation" className="flex items-center space-x-6 font-mono text-xs md:text-sm uppercase tracking-widest font-bold">
             {token ? (
               <>
                 <Link to="/dashboard" className="px-4 py-2.5 border border-black hover:bg-black hover:text-white transition-none flex items-center">
