@@ -45,12 +45,16 @@ def call_openrouter(system_prompt: str, user_prompt: str) -> Optional[str]:
         resp = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload, timeout=25)
         if resp.status_code == 200:
             data = resp.json()
-            return data["choices"][0]["message"]["content"]
+            choices = data.get("choices", [])
+            if choices and len(choices) > 0:
+                return choices[0].get("message", {}).get("content")
+            print("OpenRouter returned 200 OK but choices array was empty")
+            return None
         else:
-            print(f"OpenRouter API error ({resp.status_code}): {resp.text}")
+            print(f"OpenRouter API error status ({resp.status_code}): {resp.text[:300]}")
             return None
     except Exception as e:
-        print(f"OpenRouter exception: {e}")
+        print(f"OpenRouter network/request exception: {e}")
         return None
 
 @asynccontextmanager
