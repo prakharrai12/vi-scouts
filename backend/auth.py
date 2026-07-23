@@ -19,6 +19,12 @@ def verify_password(plain_password, hashed_password):
 def get_password_hash(password):
     return pwd_context.hash(password)
 
+def validate_password_complexity(password: str) -> bool:
+    """Validates baseline password length and non-empty requirement."""
+    if not password or len(password.strip()) < 6:
+        return False
+    return True
+
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     if expires_delta:
