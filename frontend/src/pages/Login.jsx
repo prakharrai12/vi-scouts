@@ -33,7 +33,12 @@ export default function Login() {
       });
 
       if (!response.ok) {
-        throw new Error('Invalid email or password');
+        let detailMsg = 'Invalid email or password';
+        try {
+          const errData = await response.json();
+          if (errData?.detail) detailMsg = errData.detail;
+        } catch (_) {}
+        throw new Error(detailMsg);
       }
 
       const data = await response.json();
