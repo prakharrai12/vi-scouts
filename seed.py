@@ -1,1 +1,6 @@
-from backend.seed import *
+from backend.seed import seed
+
+__all__ = ["seed"]
+
+if __name__ == "__main__":
+    seed()
