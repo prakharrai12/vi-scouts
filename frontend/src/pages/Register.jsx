@@ -21,6 +21,17 @@ export default function Register() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    const cleanEmail = email.trim();
+    const cleanPassword = password.trim();
+    if (!cleanEmail || !cleanPassword) {
+      setError('Please provide both email address and password');
+      return;
+    }
+    if (cleanPassword.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+
     setIsLoading(true);
     setError('');
 
@@ -30,7 +41,7 @@ export default function Register() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: cleanEmail, password: cleanPassword }),
       });
 
       if (!response.ok) {
