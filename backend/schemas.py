@@ -2,7 +2,9 @@ import json
 from pydantic import BaseModel, Field, field_validator
 try:
     from pydantic import EmailStr
-except ImportError:
+    class _TestEmailSchema(BaseModel):
+        email: EmailStr
+except (ImportError, Exception):
     EmailStr = str
 
 from typing import Optional, List, Any

@@ -6,10 +6,11 @@ frontend/.vite
 
 # Python
 backend/venv
-backend/__pycache__
-backend/*.pyc
-backend/*.pyo
-backend/*.pyd
+__pycache__/
+*/__pycache__/
+*.pyc
+*.pyo
+*.pyd
 
 # Environment
 .env
